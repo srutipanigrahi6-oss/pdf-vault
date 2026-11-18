@@ -44,42 +44,44 @@
       padding: 25px 18px;
     }
 
-    .home {
+    .home, .pick-button {
       display: inline-block;
-      padding: 11px 16px;
+      padding: 12px 17px;
       border-radius: 10px;
       background: #1e3a5f;
       color: #bfdbfe;
       text-decoration: none;
-      margin-bottom: 28px;
+      border: 1px solid #31547b;
       font-size: 14px;
+      cursor: pointer;
     }
 
-    .home:hover {
-      background: #285080;
+    .home {
+      margin-bottom: 28px;
     }
 
-    .hero {
+    .hero, .info, .pdf-box {
       background: #162238;
       border: 1px solid #263650;
-      border-radius: 18px;
-      padding: 25px;
-      margin-bottom: 25px;
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 18px;
     }
 
     .hero .emoji {
-      font-size: 45px;
-      margin-bottom: 15px;
+      font-size: 42px;
+      margin-bottom: 12px;
     }
 
     .hero h2 {
-      font-size: 27px;
+      font-size: 26px;
       margin-bottom: 10px;
     }
 
-    .hero p {
+    .hero p, .info p {
       color: #94a3b8;
       line-height: 1.6;
+      font-size: 14px;
     }
 
     .section-title {
@@ -87,44 +89,55 @@
       margin: 25px 0 15px;
     }
 
-    .info {
-      background: #162238;
-      border: 1px solid #263650;
-      padding: 20px;
-      border-radius: 14px;
-      margin-bottom: 15px;
+    .info h3, .pdf-box h3 {
+      margin-bottom: 10px;
     }
 
-    .info h3 {
-      margin-bottom: 9px;
-      font-size: 16px;
+    .pdf-box {
+      display: none;
     }
 
-    .info p {
-      color: #94a3b8;
+    .pick-button {
+      margin-top: 17px;
+      font-weight: bold;
+    }
+
+    #pdfInput {
+      display: none;
+    }
+
+    #fileName {
+      color: #93c5fd;
       font-size: 14px;
-      line-height: 1.6;
+      margin-top: 15px;
+      overflow-wrap: anywhere;
     }
 
-    .status {
-      display: inline-block;
-      margin-top: 14px;
-      background: #263650;
-      color: #bfdbfe;
-      padding: 7px 11px;
-      border-radius: 20px;
-      font-size: 12px;
+    #message {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    #pdfPreview {
+      display: none;
+      width: 100%;
+      height: 65vh;
+      margin-top: 18px;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      background: white;
     }
 
     .notice {
-      margin-top: 25px;
-      padding: 16px;
       background: #172b43;
       border: 1px solid #31547b;
+      padding: 15px;
       border-radius: 12px;
       color: #bfdbfe;
       font-size: 13px;
       line-height: 1.6;
+      margin-top: 20px;
     }
 
     footer {
@@ -161,29 +174,54 @@
 
   <section class="info">
     <h3 id="overviewTitle">Your Collection</h3>
-    <p id="overview">
-      Your files will be organised here.
-    </p>
-    <span class="status">Development in progress</span>
+    <p id="overview"></p>
   </section>
 
   <section class="info">
-    <h3>Coming Next 🚀</h3>
-    <p id="features">
-      More features will be added in future versions.
+    <h3>Features</h3>
+    <p id="features"></p>
+  </section>
+
+  <section class="pdf-box" id="pdfBox">
+    <h3>📄 Open a Local PDF</h3>
+    <p>
+      Choose a PDF from your phone storage or SD card.
+      Your file stays on your device.
     </p>
+
+    <label class="pick-button" for="pdfInput">
+      📂 Choose PDF
+    </label>
+
+    <input
+      type="file"
+      id="pdfInput"
+      accept="application/pdf,.pdf"
+    >
+
+    <p id="fileName">No PDF selected yet.</p>
+    <p id="message">
+      Selected documents are only available during this page session.
+    </p>
+
+    <iframe
+      id="pdfPreview"
+      title="PDF Preview"
+    ></iframe>
   </section>
 
   <div class="notice">
-    🔒 <strong>Privacy notice</strong><br>
-    This is currently a frontend prototype.
-    No real documents are uploaded or stored here yet.
+    ℹ️ <strong>Local storage notice</strong><br>
+    PDF Vault currently previews files selected by you.
+    Documents are not uploaded to a server.
+    Closing or refreshing this page may require selecting
+    your PDF again.
   </div>
 
 </main>
 
 <footer>
-  PDF VAULT • Version 1.1
+  PDF VAULT • Version 2.0
 </footer>
 
 <script>
@@ -193,8 +231,8 @@
       title: "My PDFs",
       description: "Your personal document collection.",
       overviewTitle: "Document Library",
-      overview: "A central place to organise your PDF documents.",
-      features: "PDF uploads, folders, document previews and search."
+      overview: "Choose a PDF from your device and preview it here.",
+      features: "Local PDF selection and document preview."
     },
 
     "map library": {
@@ -203,7 +241,7 @@
       description: "Your chapter-wise map collection.",
       overviewTitle: "Geography and Map Work",
       overview: "Organise maps according to subjects and chapters.",
-      features: "Subject folders, chapter collections and map previews."
+      features: "Map PDF organisation will be added in a future update."
     },
 
     "enhanced files": {
@@ -212,7 +250,7 @@
       description: "Your improved study materials.",
       overviewTitle: "Improved Documents",
       overview: "Keep enhanced and edited versions of your study materials.",
-      features: "Version organisation, document comparison and previews."
+      features: "Enhanced document management will be added later."
     },
 
     "share centre": {
@@ -220,18 +258,18 @@
       title: "Share Centre",
       description: "Your document sharing workspace.",
       overviewTitle: "Sharing Management",
-      overview: "A place to manage document-sharing options.",
-      features: "Private links, access permissions and link management."
+      overview: "Sharing features are not active yet.",
+      features: "Sharing options will be added in a future update."
     },
-    
+
     "publishing centre": {
-  emoji: "🚀",
-  title: "Publishing Centre",
-  description: "Manage your published documents.",
-  overviewTitle: "Document Publishing",
-  overview: "Prepare and manage PDFs you choose to make publicly accessible.",
-  features: "PDF publishing, public links and publication management."
-      }
+      emoji: "🚀",
+      title: "Publishing Centre",
+      description: "Manage your published documents.",
+      overviewTitle: "Document Publishing",
+      overview: "Prepare PDFs for future public publishing.",
+      features: "Online publishing is not active yet."
+    }
   };
 
   const params = new URLSearchParams(
@@ -264,6 +302,12 @@
 
     document.getElementById("features").textContent =
       section.features;
+
+    if (sectionName === "my pdfs") {
+      document.getElementById("pdfBox").style.display =
+        "block";
+    }
+
   } else {
     document.getElementById("title").textContent =
       "Section not found";
@@ -271,6 +315,51 @@
     document.getElementById("description").textContent =
       "Please return to the home page and select a valid section.";
   }
+
+  const pdfInput = document.getElementById("pdfInput");
+  const pdfPreview = document.getElementById("pdfPreview");
+  const fileName = document.getElementById("fileName");
+  const message = document.getElementById("message");
+
+  let currentPDFUrl = null;
+
+  pdfInput.addEventListener("change", () => {
+    const file = pdfInput.files[0];
+
+    if (!file) return;
+
+    if (
+      file.type !== "application/pdf" &&
+      !file.name.toLowerCase().endsWith(".pdf")
+    ) {
+      message.textContent =
+        "Please select a valid PDF file.";
+
+      pdfInput.value = "";
+      return;
+    }
+
+    if (currentPDFUrl) {
+      URL.revokeObjectURL(currentPDFUrl);
+    }
+
+    currentPDFUrl = URL.createObjectURL(file);
+
+    fileName.textContent =
+      "Selected: " + file.name;
+
+    message.textContent =
+      "PDF ready for local preview.";
+
+    pdfPreview.src = currentPDFUrl;
+    pdfPreview.style.display = "block";
+  });
+
+  window.addEventListener("beforeunload", () => {
+    if (currentPDFUrl) {
+      URL.revokeObjectURL(currentPDFUrl);
+    }
+  });
 </script>
 
 </body>
