@@ -1,0 +1,268 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1120">
+  <title>PDF Vault | Library</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #0b1120;
+      color: #f1f5f9;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #111c32;
+      padding: 22px;
+      border-bottom: 1px solid #263650;
+    }
+
+    header h1 {
+      color: #60a5fa;
+      font-size: 25px;
+    }
+
+    header p {
+      color: #94a3b8;
+      margin-top: 6px;
+      font-size: 13px;
+    }
+
+    main {
+      max-width: 850px;
+      margin: auto;
+      padding: 25px 18px;
+    }
+
+    .home {
+      display: inline-block;
+      padding: 11px 16px;
+      border-radius: 10px;
+      background: #1e3a5f;
+      color: #bfdbfe;
+      text-decoration: none;
+      margin-bottom: 28px;
+      font-size: 14px;
+    }
+
+    .home:hover {
+      background: #285080;
+    }
+
+    .hero {
+      background: #162238;
+      border: 1px solid #263650;
+      border-radius: 18px;
+      padding: 25px;
+      margin-bottom: 25px;
+    }
+
+    .hero .emoji {
+      font-size: 45px;
+      margin-bottom: 15px;
+    }
+
+    .hero h2 {
+      font-size: 27px;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    .section-title {
+      font-size: 19px;
+      margin: 25px 0 15px;
+    }
+
+    .info {
+      background: #162238;
+      border: 1px solid #263650;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 15px;
+    }
+
+    .info h3 {
+      margin-bottom: 9px;
+      font-size: 16px;
+    }
+
+    .info p {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .status {
+      display: inline-block;
+      margin-top: 14px;
+      background: #263650;
+      color: #bfdbfe;
+      padding: 7px 11px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .notice {
+      margin-top: 25px;
+      padding: 16px;
+      background: #172b43;
+      border: 1px solid #31547b;
+      border-radius: 12px;
+      color: #bfdbfe;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px 15px;
+      color: #64748b;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>📁 PDF VAULT</h1>
+  <p>Your personal document library</p>
+</header>
+
+<main>
+
+  <a class="home" href="./index.html">
+    ← Back to Home
+  </a>
+
+  <section class="hero">
+    <div class="emoji" id="emoji">📁</div>
+    <h2 id="title">My Library</h2>
+    <p id="description">
+      Your organised document collection.
+    </p>
+  </section>
+
+  <h3 class="section-title">Section Overview</h3>
+
+  <section class="info">
+    <h3 id="overviewTitle">Your Collection</h3>
+    <p id="overview">
+      Your files will be organised here.
+    </p>
+    <span class="status">Development in progress</span>
+  </section>
+
+  <section class="info">
+    <h3>Coming Next 🚀</h3>
+    <p id="features">
+      More features will be added in future versions.
+    </p>
+  </section>
+
+  <div class="notice">
+    🔒 <strong>Privacy notice</strong><br>
+    This is currently a frontend prototype.
+    No real documents are uploaded or stored here yet.
+  </div>
+
+</main>
+
+<footer>
+  PDF VAULT • Version 1.1
+</footer>
+
+<script>
+  const sections = {
+    "my pdfs": {
+      emoji: "📄",
+      title: "My PDFs",
+      description: "Your personal document collection.",
+      overviewTitle: "Document Library",
+      overview: "A central place to organise your PDF documents.",
+      features: "PDF uploads, folders, document previews and search."
+    },
+
+    "map library": {
+      emoji: "🗺️",
+      title: "Map Library",
+      description: "Your chapter-wise map collection.",
+      overviewTitle: "Geography and Map Work",
+      overview: "Organise maps according to subjects and chapters.",
+      features: "Subject folders, chapter collections and map previews."
+    },
+
+    "enhanced files": {
+      emoji: "✨",
+      title: "Enhanced Files",
+      description: "Your improved study materials.",
+      overviewTitle: "Improved Documents",
+      overview: "Keep enhanced and edited versions of your study materials.",
+      features: "Version organisation, document comparison and previews."
+    },
+
+    "share centre": {
+      emoji: "🔗",
+      title: "Share Centre",
+      description: "Your document sharing workspace.",
+      overviewTitle: "Sharing Management",
+      overview: "A place to manage document-sharing options.",
+      features: "Private links, access permissions and link management."
+    }
+  };
+
+  const params = new URLSearchParams(
+    window.location.search
+  );
+
+  const sectionName = (
+    params.get("section") || "my pdfs"
+  ).toLowerCase();
+
+  const section = sections[sectionName];
+
+  if (section) {
+    document.title = "PDF Vault | " + section.title;
+
+    document.getElementById("emoji").textContent =
+      section.emoji;
+
+    document.getElementById("title").textContent =
+      section.title;
+
+    document.getElementById("description").textContent =
+      section.description;
+
+    document.getElementById("overviewTitle").textContent =
+      section.overviewTitle;
+
+    document.getElementById("overview").textContent =
+      section.overview;
+
+    document.getElementById("features").textContent =
+      section.features;
+  } else {
+    document.getElementById("title").textContent =
+      "Section not found";
+
+    document.getElementById("description").textContent =
+      "Please return to the home page and select a valid section.";
+  }
+</script>
+
+</body>
+</html>
