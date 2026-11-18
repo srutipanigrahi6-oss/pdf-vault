@@ -44,7 +44,7 @@
       padding: 25px 18px;
     }
 
-    .home, .pick-button {
+    .home, .pick-button, .control {
       display: inline-block;
       padding: 12px 17px;
       border-radius: 10px;
@@ -78,7 +78,7 @@
       margin-bottom: 10px;
     }
 
-    .hero p, .info p {
+    .hero p, .info p, .pdf-box p {
       color: #94a3b8;
       line-height: 1.6;
       font-size: 14px;
@@ -108,24 +108,58 @@
 
     #fileName {
       color: #93c5fd;
-      font-size: 14px;
       margin-top: 15px;
       overflow-wrap: anywhere;
     }
 
     #message {
-      color: #94a3b8;
-      font-size: 13px;
       margin-top: 10px;
     }
 
-    #pdfPreview {
+    .viewer {
       display: none;
-      width: 100%;
-      height: 65vh;
-      margin-top: 18px;
-      border: 1px solid #334155;
+      margin-top: 20px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .control {
+      padding: 10px 13px;
+      font-weight: bold;
+    }
+
+    .control:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    #pageInfo {
+      color: #bfdbfe;
+      font-size: 13px;
+      padding: 8px;
+    }
+
+    .canvas-container {
+      background: #334155;
       border-radius: 10px;
+      padding: 10px;
+      overflow: auto;
+      text-align: center;
+      min-height: 200px;
+    }
+
+    #pdfCanvas {
+      display: block;
+      margin: auto;
+      max-width: 100%;
+      height: auto;
       background: white;
     }
 
@@ -183,10 +217,10 @@
   </section>
 
   <section class="pdf-box" id="pdfBox">
-    <h3>📄 Open a Local PDF</h3>
+    <h3>📄 Local PDF Reader</h3>
     <p>
       Choose a PDF from your phone storage or SD card.
-      Your file stays on your device.
+      The selected file is processed locally in your browser.
     </p>
 
     <label class="pick-button" for="pdfInput">
@@ -201,28 +235,59 @@
 
     <p id="fileName">No PDF selected yet.</p>
     <p id="message">
-      Selected documents are only available during this page session.
+      Select a PDF to begin reading.
     </p>
 
-    <iframe
-      id="pdfPreview"
-      title="PDF Preview"
-    ></iframe>
+    <div class="viewer" id="viewer">
+
+      <div class="toolbar">
+        <button class="control" id="prevPage" disabled>
+          ← Previous
+        </button>
+
+        <span id="pageInfo">Page 0 / 0</span>
+
+        <button class="control" id="nextPage" disabled>
+          Next →
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <button class="control" id="zoomOut">
+          − Zoom
+        </button>
+
+        <button class="control" id="zoomIn">
+          + Zoom
+        </button>
+
+        <button class="control" id="resetZoom">
+          Reset
+        </button>
+      </div>
+
+      <div class="canvas-container">
+        <canvas id="pdfCanvas"></canvas>
+      </div>
+
+    </div>
   </section>
 
   <div class="notice">
     ℹ️ <strong>Local storage notice</strong><br>
-    PDF Vault currently previews files selected by you.
-    Documents are not uploaded to a server.
-    Closing or refreshing this page may require selecting
-    your PDF again.
+    Your selected PDF is not uploaded to a server.
+    It remains available only during this page session.
+    Refreshing or closing the page may require selecting
+    the document again.
   </div>
 
 </main>
 
 <footer>
-  PDF VAULT • Version 2.0
+  PDF VAULT • Version 2.1
 </footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <script>
   const sections = {
@@ -232,7 +297,7 @@
       description: "Your personal document collection.",
       overviewTitle: "Document Library",
       overview: "Choose a PDF from your device and preview it here.",
-      features: "Local PDF selection and document preview."
+      features: "Local PDF selection and an interactive PDF reader."
     },
 
     "map library": {
@@ -317,16 +382,151 @@
   }
 
   const pdfInput = document.getElementById("pdfInput");
-  const pdfPreview = document.getElementById("pdfPreview");
   const fileName = document.getElementById("fileName");
   const message = document.getElementById("message");
+  const viewer = document.getElementById("viewer");
+  const canvas = document.getElementById("pdfCanvas");
+  const context = canvas.getContext("2d");
 
-  let currentPDFUrl = null;
+  const prevPage = document.getElementById("prevPage");
+  const nextPage = document.getElementById("nextPage");
+  const pageInfo = document.getElementById("pageInfo");
 
-  pdfInput.addEventListener("change", () => {
+  let pdfDocument = null;
+  let currentPage = 1;
+  let zoom = 1.0;
+  let renderTask = null;
+  let loadToken = 0;
+
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  } else {
+    message.textContent =
+      "PDF reader library could not load. Check your internet connection and refresh.";
+  }
+
+  async function renderPage() {
+    if (!pdfDocument) return;
+
+    if (renderTask) {
+      try {
+        renderTask.cancel();
+        await renderTask.promise;
+      } catch (error) {
+        // A cancelled render is expected.
+      }
+      renderTask = null;
+    }
+
+    const page = await pdfDocument.getPage(currentPage);
+
+    const viewport = page.getViewport({
+      scale: zoom
+    });
+
+    const outputScale = Math.min(
+      window.devicePixelRatio || 1,
+      2
+    );
+
+    canvas.width = Math.floor(
+      viewport.width * outputScale
+    );
+
+    canvas.height = Math.floor(
+      viewport.height * outputScale
+    );
+
+    canvas.style.width = viewport.width + "px";
+    canvas.style.height = viewport.height + "px";
+
+    const transform = outputScale !== 1
+      ? [outputScale, 0, 0, outputScale, 0, 0]
+      : null;
+
+    renderTask = page.render({
+      canvasContext: context,
+      viewport: viewport,
+      transform: transform
+    });
+
+    try {
+      await renderTask.promise;
+    } catch (error) {
+      if (error.name !== "RenderingCancelledException") {
+        throw error;
+      }
+    } finally {
+      renderTask = null;
+    }
+
+    pageInfo.textContent =
+      "Page " + currentPage + " / " + pdfDocument.numPages;
+
+    prevPage.disabled = currentPage <= 1;
+    nextPage.disabled =
+      currentPage >= pdfDocument.numPages;
+  }
+
+  async function changePage(direction) {
+    if (!pdfDocument) return;
+
+    const newPage = currentPage + direction;
+
+    if (
+      newPage < 1 ||
+      newPage > pdfDocument.numPages
+    ) return;
+
+    currentPage = newPage;
+
+    try {
+      await renderPage();
+    } catch (error) {
+      message.textContent =
+        "Could not display this page.";
+    }
+  }
+
+  prevPage.addEventListener("click", () => {
+    changePage(-1);
+  });
+
+  nextPage.addEventListener("click", () => {
+    changePage(1);
+  });
+
+  document.getElementById("zoomIn").addEventListener(
+    "click", async () => {
+      if (!pdfDocument) return;
+      zoom = Math.min(zoom + 0.2, 3);
+      await renderPage();
+    }
+  );
+
+  document.getElementById("zoomOut").addEventListener(
+    "click", async () => {
+      if (!pdfDocument) return;
+      zoom = Math.max(zoom - 0.2, 0.4);
+      await renderPage();
+    }
+  );
+
+  document.getElementById("resetZoom").addEventListener(
+    "click", async () => {
+      if (!pdfDocument) return;
+      zoom = 1;
+      await renderPage();
+    }
+  );
+
+  pdfInput.addEventListener("change", async () => {
     const file = pdfInput.files[0];
 
     if (!file) return;
+
+    const thisLoad = ++loadToken;
 
     if (
       file.type !== "application/pdf" &&
@@ -334,33 +534,68 @@
     ) {
       message.textContent =
         "Please select a valid PDF file.";
-
       pdfInput.value = "";
       return;
     }
 
-    if (currentPDFUrl) {
-      URL.revokeObjectURL(currentPDFUrl);
+    if (!window.pdfjsLib) {
+      message.textContent =
+        "PDF reader library is unavailable. Check your internet connection.";
+      return;
     }
 
-    currentPDFUrl = URL.createObjectURL(file);
+    message.textContent = "Loading your PDF...";
+    fileName.textContent = "Selected: " + file.name;
 
-    fileName.textContent =
-      "Selected: " + file.name;
+    viewer.style.display = "none";
+    pdfDocument = null;
 
-    message.textContent =
-      "PDF ready for local preview.";
+    if (renderTask) {
+      try {
+        renderTask.cancel();
+      } catch (error) {}
+      renderTask = null;
+    }
 
-    pdfPreview.src = currentPDFUrl;
-    pdfPreview.style.display = "block";
-  });
+    try {
+      const fileData = new Uint8Array(
+        await file.arrayBuffer()
+      );
 
-  window.addEventListener("beforeunload", () => {
-    if (currentPDFUrl) {
-      URL.revokeObjectURL(currentPDFUrl);
+      if (thisLoad !== loadToken) return;
+
+      const loadingTask = pdfjsLib.getDocument({
+        data: fileData
+      });
+
+      const loadedDocument = await loadingTask.promise;
+
+      if (thisLoad !== loadToken) {
+        await loadedDocument.destroy();
+        return;
+      }
+
+      pdfDocument = loadedDocument;
+      currentPage = 1;
+      zoom = 1;
+
+      viewer.style.display = "block";
+      message.textContent = "PDF loaded successfully.";
+
+      await renderPage();
+
+    } catch (error) {
+      console.error(error);
+
+      if (thisLoad === loadToken) {
+        viewer.style.display = "none";
+        message.textContent =
+          "Could not open this PDF. It may be damaged, encrypted, or unsupported.";
+      }
     }
   });
 </script>
 
 </body>
-</html>
+      </html>
+      
